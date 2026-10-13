@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Minimal Event Loop Simulator</title>
+    <style>
+        body { font-family: sans-serif; display: flex; gap: 20px; padding: 20px; background: #fafafa; }
+        .panel { border: 1px solid #ccc; padding: 10px; border-radius: 4px; background: white; min-width: 160px; min-height: 120px; }
+        .item { padding: 8px; margin: 4px 0; color: white; text-align: center; border-radius: 4px; font-weight: bold; font-size: 13px; }
+        .stack-item { background: #0084ff; }
+        .micro-item { background: #b084ff; }
+        .macro-item { background: #ffaa00; }
+        .log-item { background: #28a745; }
+        button { padding: 10px 20px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div>
+        <button id="runBtn" onclick="run()">Run Code</button>
+        <pre style="background:#eee; padding:10px; margin-top:15px; border-radius:4px;">
+console.log("Sync");
+setTimeout(macroCb, 0);
+Promise.resolve().then(microCb);
+        </pre>
+    </div>
+
+    <div class="panel"><h3>Call Stack</h3><div id="stack"></div></div>
+    <div class="panel"><h3>Microtasks (Promises)</h3><div id="micro"></div></div>
+    <div class="panel"><h3>Macrotasks (Timeout)</h3><div id="macro"></div></div>
+    <div class="panel"><h3>Console</h3><div id="console"></div></div>
+
+    <script>
+        const wait = () => new Promise(r => setTimeout(r, 800));
+        const view = (id) => document.getElementById(id);
+        const makeBox = (txt, cls) => `<div class="item ${cls}">${txt}</div>`;
+
+        async function run() {
+            view('runBtn').disabled = true;
+            view('stack').innerHTML = view('micro').innerHTML = view('macro').innerHTML = view('console').innerHTML = "";
+
+            // 1. Synchronous Execution
+            view('stack').innerHTML += makeBox('Main Script', 'stack-item'); await wait();
+            
+            view('console').innerHTML += makeBox('Sync Output', 'log-item'); await wait();
+            
+            view('macro').innerHTML += makeBox('macroCb', 'macro-item'); await wait();
+            
+            view('micro').innerHTML += makeBox('microCb', 'micro-item'); await wait();
+            
+            view('stack').innerHTML = ""; await wait(); // Stack goes empty!
+
+            // 2. Clear Microtasks first
+            while(view('micro').children.length > 0) {
+                view('micro').innerHTML = "";
+                view('stack').innerHTML = makeBox('Run: microCb', 'micro-item'); await wait();
+                view('console').innerHTML += makeBox('Micro Output', 'log-item');
+                view('stack').innerHTML = ""; await wait();
+            }
+
+            // 3. Clear Macrotasks next
+            while(view('macro').children.length > 0) {
+                view('macro').innerHTML = "";
+                view('stack').innerHTML = makeBox('Run: macroCb', 'macro-item'); await wait();
+                view('console').innerHTML += makeBox('Macro Output', 'log-item');
+                view('stack').innerHTML = ""; await wait();
+            }
+
+            view('runBtn').disabled = false;
+        }
+    </script>
+</body>
+</html>

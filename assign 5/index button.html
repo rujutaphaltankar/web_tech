@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>requestAnimationFrame Example</title>
+</head>
+<body>
+
+    <!-- HTML Elements -->
+    <div id="box" style="width: 50px; height: 50px; background: red; position: absolute; left: 0px; top: 50px;"></div>
+    <button onclick="startAnimation()">Start</button>
+
+    <!-- JavaScript Code -->
+    <script>
+        let box = document.getElementById("box");
+        let position = 0;
+        let animationId = null;
+
+        function step() {
+            position += 2; // Move 2 pixels per frame
+            box.style.left = position + 'px';
+
+            // Keep the loop going
+            animationId = requestAnimationFrame(step);
+        }
+
+        function startAnimation() {
+            if (!animationId) {
+                animationId = requestAnimationFrame(step);
+            }
+        }
+    </script>
+
+</body>
+</html>

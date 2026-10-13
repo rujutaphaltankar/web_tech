@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sync vs Async Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px; cursor: pointer; }
+        #log { margin-top: 20px; text-align: left; display: inline-block; background: #f4f4f4; padding: 15px; width: 300px; height: 150px; overflow-y: auto; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+
+    <h2>Synchronous vs Asynchronous in JavaScript</h2>
+    
+    <button onclick="runSynchronous()">Run Synchronous</button>
+    <button onclick="runAsynchronous()">Run Asynchronous</button>
+    <br>
+    <button onclick="clearLog()">Clear Log</button>
+
+    <h3>Output Log:</h3>
+    <div id="log"></div>
+
+    <script>
+        function logMessage(msg) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += msg + "<br>";
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = "";
+        }
+
+        // Synchronous Code: Blocks execution until the task finishes
+        function runSynchronous() {
+            clearLog();
+            logMessage("1. Sync Start");
+
+            // Simulate a heavy blocking delay (5 seconds)
+            const start = Date.now();
+            while (Date.now() - start < 5000) {
+                // Do nothing, just wait (blocks the main thread)
+            }
+
+            logMessage("2. Sync Task Finished");
+            logMessage("3. Sync End");
+        }
+
+        // Asynchronous Code: Runs in the background without blocking
+        function runAsynchronous() {
+            clearLog();
+            logMessage("1. Async Start");
+
+            // Use setTimeout to simulate a non-blocking background task (5 seconds)
+            setTimeout(() => {
+                logMessage("2. Async Task Finished (after 5s)"); 
+          }, 5000);
+
+            logMessage("3. Async End (Happens immediately!)");
+        }
+    </script>
+
+</body>
+</html>

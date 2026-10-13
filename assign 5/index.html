@@ -1,0 +1,56 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>requestAnimationFrame Example</title>
+  <style>
+    /* Container layout */
+    .container {
+      width: 100%;
+      height: 150px;
+      border: 2px solid #ccc;
+      position: relative;
+      background-color: #f9f9f9;
+    }
+
+    /* The animated element */
+    .box {
+      width: 50px;
+      height: 50px;
+      background-color: #3498db;
+      position: absolute;
+      top: 50px;
+      left: 0px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div id="animateBox" class="box"></div>
+  </div>
+
+  <script>
+    const box = document.getElementById('animateBox');
+    let position = 0;
+
+    function move() {
+      // 1. Advance the position slightly
+      position += 2; 
+
+      // 2. Apply the updated position via CSS transforms (better performance than 'left')
+      box.style.transform = `translateX(${position}px)`;
+
+      // 3. Keep animating loop going if it hasn't left the screen boundary
+      if (position < window.innerWidth - 60) {
+        requestAnimationFrame(move);
+      }
+    }
+
+    // Kickstart the initial animation frame
+    requestAnimationFrame(move);
+  </script>
+
+</body>
+</html>

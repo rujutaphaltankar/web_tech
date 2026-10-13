@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Visual Event Loop Simulator</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f6fa; color: #333; margin: 20px; }
+        h2 { text-align: center; color: #2c3e50; }
+        .container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        .box { background: white; border-radius: 8px; padding: 15px; width: 250px; min-height: 250px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .box h3 { margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 8px; text-align: center; }
+        .code-container { width: 350px; }
+        pre { background: #2f3640; color: #f5f6fa; padding: 15px; border-radius: 8px; font-size: 13px; line-height: 1.5; overflow-x: auto; margin: 0;}
+        .list { flex-grow: 1; display: flex; flex-direction: column; gap: 8px; justify-content: flex-start; }
+        .item { padding: 10px; border-radius: 4px; color: white; font-weight: bold; font-family: monospace; animation: fadeIn 0.3s ease; text-align: center;}
+        
+        /* Queue Item Colors */
+        .sync-item { background: #00a8ff; }
+        .micro-item { background: #9c88ff; }
+        .macro-item { background: #e1b12c; }
+        .console-item { background: #44bd32; }
+
+        .controls { text-align: center; margin: 20px 0; }
+        button { padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; border: none; border-radius: 5px; background: #4ae; color: white; transition: 0.2s; }
+        button:hover { background: #29c; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .highlight-line { background: #44475a; display: block; width: 100%; color: #ff79c6; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <h2>Visual JS Event Loop Tool</h2>
+    
+    <div class="controls">
+        <button id="runBtn" onclick="startSimulation()">Simulate Execution</button>
+    </div>
+
+    <div class="container">
+        <!-- Code Window -->
+        <div class="box code-container">
+            <h3>Code Snippet</h3>
+            <pre id="codeBlock">
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Timeout (Macro)");
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("Promise (Micro)");
+});
+
+console.log("End");
+            </pre>
+        </div>
+
+        <!-- Call Stack -->
+        <div class="box">
+            <h3>Call Stack <br><small style="font-size:11px; color:#7f8c8d;">(LIFO - Last In First Out)</small></h3>
+            <div id="callStack" class="list"></div>
+        </div>
+
+        <!-- Micro-task Queue -->
+        <div class="box">
+            <h3>Micro-task Queue <br><small style="font-size:11px; color:#9c88ff;">(High Priority - Promises)</small></h3>
+            <div id="microQueue" class="list"></div>
+        </div>
+
+        <!-- Macro-task Queue -->
+        <div class="box">
+            <h3>Macro-task Queue <br><small style="font-size:11px; color:#e1b12c;">(Low Priority - SetTimeout)</small></h3>
+            <div id="macroQueue" class="list"></div>
+        </div>
+
+        <!-- Browser Console Output -->
+        <div class="box">
+            <h3>Console Output</h3>
+            <div id="consoleOut" class="list"></div>
+        </div>
+    </div>
+
+    <script>
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        
+        // Helper to visual add items to DOM lists
+        function createBox(text, typeClass) {
+            const div = document.createElement('div');
+            div.className = `item ${typeClass}`;
+            div.innerText = text;
+            return div;
+        }
+
+        async function startSimulation() {
+            const btn = document.getElementById('runBtn');
+            btn.disabled = true;
+
+            // Clear everything
+            const stack = document.getElementById('callStack');
+            const micro = document.getElementById('microQueue');
+            const macro = document.getElementById('macroQueue');
+            const cons = document.getElementById('consoleOut');
+            stack.innerHTML = micro.innerHTML = macro.innerHTML = cons.innerHTML = "";
+
+            const stepTime = 1200; // Animation timing gap in milliseconds
+
+            // --- STEP 1: Main Script starts ---
+            stack.appendChild(createBox("mainScript()", "sync-item"));
+            await delay(stepTime);
+
+            // Line 1: Sync log
+            stack.appendChild(createBox('log("Start")', "sync-item"));
+            await delay(stepTime);
+            cons.appendChild(createBox("Start", "console-item"));
+            stack.removeChild(stack.lastChild); // Pop log("Start")
+            await delay(stepTime);
+
+            // Line 3: setTimeout evaluation
+            stack.appendChild(createBox("setTimeout(..., 0)", "sync-item"));
+            await delay(stepTime);
+            macro.appendChild(createBox("cb: Timeout (Macro)", "macro-item")); // Pushed to macro queue
+            stack.removeChild(stack.lastChild); // Pop setTimeout
+            await delay(stepTime);
+
+            // Line 7: Promise evaluation
+            stack.appendChild(createBox("Promise.then(...)", "sync-item"));
+            await delay(stepTime);
+            micro.appendChild(createBox("cb: Promise (Micro)", "micro-item")); // Pushed to micro queue
+            stack.removeChild(stack.lastChild); // Pop Promise
+            await delay(stepTime);
+
+            // Line 11: Sync log
+            stack.appendChild(createBox('log("End")', "sync-item"));
+            await delay(stepTime);
+            cons.appendChild(createBox("End", "console-item"));
+            stack.removeChild(stack.lastChild); // Pop log("End")
+            await delay(stepTime);
+
+            // Main script finishes, stack becomes completely empty
+            stack.removeChild(stack.firstChild); // Pop mainScript()
+            await delay(stepTime);
+
+            // --- STEP 2: Process Micro-tasks ---
+            // Event Loop checks Micro-task Queue because Stack is empty
+            while (micro.children.length > 0) {
+                const task = micro.removeChild(micro.firstChild);
+                stack.appendChild(createBox("Run: Promise Micro", "micro-item"));
+                await delay(stepTime);
+                cons.appendChild(createBox("Promise (Micro)", "console-item"));
+                stack.removeChild(stack.lastChild);
+                await delay(stepTime);
+            }
+
+            // --- STEP 3: Process Macro-tasks ---
+            // Micro-tasks are clear, now process one Macro-task
+            if (macro.children.length > 0) {
+                const task = macro.removeChild(macro.firstChild);
+                stack.appendChild(createBox("Run: Timeout Macro", "macro-item"));
+                await delay(stepTime);
+                cons.appendChild(createBox("Timeout (Macro)", "console-item"));
+                stack.removeChild(stack.lastChild);
+                await delay(stepTime);
+            }
+
+            btn.disabled = false;
+        }
+    </script>
+</body>
+</html>
