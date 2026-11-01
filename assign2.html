@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>CORS Practical</h2>
+    <button onclick="getData()">Get Data</button>
+    <p id="result"></p>
+
+    <script>
+        function getData() {
+            fetch("http://localhost:3000")
+            .then(res => res.text())
+            .then(data => {
+                document.getElementById("result").innerText = data;
+            })
+            .catch(err => console.log(err));
+        }
+    </script>
+</body>
+</html>
