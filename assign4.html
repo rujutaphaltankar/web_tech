@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Accessible Multi-Step Form</title>
+</head>
+
+<body>
+
+    <header>
+        <h1>Registration Form</h1>
+    </header>
+
+    <main>
+
+        <form id="myForm" aria-label="Registration form">
+
+            <fieldset id="step1">
+                <legend>Step 1: Personal Details</legend>
+
+                <label for="name">Name:</label>
+                <input type="text" id="name" required>
+                <br><br>
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+                <br><br>
+
+                <button type="button" onclick="nextStep()">Next</button>
+            </fieldset>
+
+            <fieldset id="step2" hidden>
+                <legend>Step 2: Contact Details</legend>
+
+                <label for="phone">Phone:</label>
+                <input type="tel" id="phone" required>
+                <br><br>
+
+                <label for="city">City:</label>
+                <input type="text" id="city" required>
+                <br><br>
+
+                <button type="button" onclick="previousStep()">Back</button>
+                <button type="submit">Submit</button>
+            </fieldset>
+
+        </form>
+
+        <p id="message" role="status" aria-live="polite"></p>
+
+    </main>
+
+    <script>
+        function nextStep() {
+            var step1 = document.getElementById("step1");
+
+            if (step1.checkValidity()) {
+                step1.hidden = true;
+                document.getElementById("step2").hidden = false;
+                document.getElementById("message").innerHTML = "Step 2 of 2";
+            }
+            else {
+                step1.reportValidity();
+            }
+        }
+
+        function previousStep() {
+            document.getElementById("step2").hidden = true;
+            document.getElementById("step1").hidden = false;
+            document.getElementById("message").innerHTML = "Step 1 of 2";
+        }
+
+        document.getElementById("myForm").onsubmit = function(event) {
+            event.preventDefault();
+            document.getElementById("message").innerHTML = "Registration completed successfully!";
+        };
+    </script>
+
+</body>
+</html>
