@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Box Animation</title>
+    </head>
+
+<body>
+
+    <h2>Box Animation</h2>
+
+    <div id="box" style="width:50px; height:50px; background:blue; position:absolute; left:0px;"></div>
+
+    <br><br><br><br>
+
+    <button onclick="start()">Start</button>
+    <button onclick="stop()">Stop</button>
+
+    <script>
+        let box = document.getElementById("box");
+        let x = 0;
+        let id;
+
+        function move() {
+            x = x + 2;
+            box.style.left = x + "px";
+
+            if (x < window.innerWidth - 50) {
+                id = requestAnimationFrame(move);
+            }
+        }
+
+        function start() {
+            if (id == null) {
+                id = requestAnimationFrame(move);
+            }
+        }
+
+        function stop() {
+            cancelAnimationFrame(id);
+            id = null;
+        }
+
+        start();
+    </script>
+
+</body>
+</html>
