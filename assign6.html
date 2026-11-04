@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JavaScript Event Loop</title>
+</head>
+<body>
+
+    <h2>JavaScript Event Loop</h2>
+
+    <button onclick="run()">Start / Run</button>
+    <button onclick="reset()">Reset</button>
+
+    <h3>Call Stack</h3>
+    <p id="stack">Empty</p>
+
+    <h3>Micro-task Queue</h3>
+    <p id="micro">Empty</p>
+
+    <h3>Macro-task Queue</h3>
+    <p id="macro">Empty</p>
+
+    <h3>Output</h3>
+    <p id="output">No output yet</p>
+
+    <script>
+        let timer;
+        let interval;
+
+        function run() {
+            reset();
+
+            // Synchronous code
+            document.getElementById("stack").innerText = "console.log()";
+            document.getElementById("output").innerText = "Hello";
+
+            // Micro-tasks
+            document.getElementById("micro").innerText = "Promise.then(), queueMicrotask()";
+
+            Promise.resolve().then(function() {
+                show("Promise executed");
+            });
+
+            queueMicrotask(function() {
+                show("Micro-task executed");
+            });
+
+            // Macro-tasks
+            document.getElementById("macro").innerText = "setTimeout(), setInterval()";
+
+            timer = setTimeout(function() {
+                show("setTimeout executed");
+                document.getElementById("stack").innerText = "Empty";
+                document.getElementById("micro").innerText = "Empty";
+            }, 1000);
+
+            let count = 0;
+
+            interval = setInterval(function() {
+                count++;
+                show("setInterval: " + count);
+
+                if (count == 2) {
+                    clearInterval(interval);
+                    document.getElementById("macro").innerText = "Empty";
+                }
+            }, 2000);
+        }
+
+        function show(text) {
+            document.getElementById("output").innerHTML += "<br>" + text;
+        }
+
+        function reset() {
+            clearTimeout(timer);
+            clearInterval(interval);
+
+            document.getElementById("stack").innerText = "Empty";
+            document.getElementById("micro").innerText = "Empty";
+            document.getElementById("macro").innerText = "Empty";
+            document.getElementById("output").innerText = "No output yet";
+        }
+    </script>
+
+</body>
+</html>
