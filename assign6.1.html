@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sync and Async</title>
+</head>
+<body>
+
+    <h2>Synchronous and Asynchronous Execution</h2>
+
+    <button onclick="sync()">Synchronous</button>
+    <button onclick="asyncTask()">Asynchronous</button>
+    <button onclick="reset()">Reset</button>
+
+    <h3>Output:</h3>
+    <p id="output">Output appears here</p>
+
+    <script>
+        function sync() {
+            reset();
+
+            show("Task 1");
+            show("Task 2");
+            show("Task 3");
+        }
+
+        function asyncTask() {
+            reset();
+
+            show("Task 1");
+
+            setTimeout(function() {
+                show("Task 3");
+            }, 2000);
+
+            show("Task 2");
+        }
+
+        function show(text) {
+            document.getElementById("output").innerHTML += "<br>" + text;
+        }
+
+        function reset() {
+            document.getElementById("output").innerHTML = "";
+        }
+    </script>
+
+</body>
+</html>
